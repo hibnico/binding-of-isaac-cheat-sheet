@@ -16,7 +16,7 @@ extract_images () {
           -e 's/<\/div>/<\/span>/g' \
           -e "s/<td>/<div class=\"isaac-image\" data-isaac-category=\"$1\">/" \
           -e 's/<\/td>/<\/div>/' \
-          -e 's/href="/href="https:\/\/bindingofisaacrebirth.fandom.com/' \
+          -e 's/href="/target="_blank" href="https:\/\/bindingofisaacrebirth.fandom.com/' \
     > "work/$1_images.html"
 }
 
@@ -28,6 +28,7 @@ extract_description() {
     | sed -e 's/<td>/<div class="isaac-description">/' \
           -e 's/<\/td>/<\/div>/' \
           -e 's/<img/<img referrerpolicy="no-referrer"/g' \
+          -e 's/href="/target="_blank" href="https:\/\/bindingofisaacrebirth.fandom.com/' \
     > "work/$1_descriptions.html"
 }
 
