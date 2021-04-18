@@ -28,7 +28,7 @@ extract_description() {
     | sed -e 's/<td>/<div class="isaac-description">/' \
           -e 's/<\/td>/<\/div>/' \
           -e 's/<img/<img referrerpolicy="no-referrer"/g' \
-          -e 's/href="/target="_blank" href="https:\/\/bindingofisaacrebirth.fandom.com/' \
+          -e 's/href="/target="_blank" href="https:\/\/bindingofisaacrebirth.fandom.com/g' \
     > "work/$1_descriptions.html"
 }
 

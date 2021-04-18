@@ -18,7 +18,9 @@
     body {
         background-color: rgba(75,48,38, 1);
         color: #fff;
-        padding: 80px 20px 20px;
+    }
+    #content {
+        padding: 20px;
     }
     h2 {
         font-family: VT323,serif;
@@ -34,6 +36,9 @@
         width: 100px;
         height: 100px;
     }
+    .isaac-image.selected {
+        border: #777777 solid 1px;
+    }
     .isaac-image-title {
         display: flex;
         justify-content: center;
@@ -45,7 +50,7 @@
     #isaac-description-popup {
         display: none;
         position: absolute;
-        width: max(600px, 40%);
+        /*width: max(600px, 40%);*/
     }
     #isaac-description-popup .modal-content {
         background-color: rgb(101, 67, 55);
@@ -59,16 +64,16 @@
         text-decoration: underline;
     }
     #banner {
-        position:fixed;
+        position:sticky;
         top: 0;
-        left: 0;
-        width: 100%;
         background-color: rgb(101, 67, 55);
-        padding: 10px;
         border-bottom: black solid 2px;
         font-family: VT323,serif;
     }
-    #banner img {
+    #banner form {
+        padding: 10px;
+    }
+    #banner .logo {
         height: 100%;
     }
     .modal-title {
@@ -88,6 +93,32 @@
         color: #f9ae47;
         text-decoration: overline underline dotted;
     }
+    #descriptions .description {
+        margin: 20px;
+        display: table;
+        width: 100%;
+        border-top: black solid 1px;
+    }
+    #descriptions .description .icon {
+        display: table-cell;
+        vertical-align: middle;
+        width: 80px;
+        text-align: center;
+    }
+    #descriptions .description .body {
+        display: table-cell;
+        vertical-align: middle;
+        padding-left: 10px;
+    }
+    #descriptions .description .body .title {
+        font-size: 30px;
+    }
+    #descriptions .description .body .text {
+        font-family: var(--bs-font-sans-serif);
+    }
+    .tooltip {
+        font-family: VT323,serif;
+    }
 </style>
 <div id="isaac-description-popup">
     <div class="modal-content">
@@ -105,7 +136,7 @@
     <form>
         <div class="row">
             <div class="col-1">
-                <img src="resources/isaac.webp" />
+                <img class="logo" src="resources/isaac.webp" />
             </div>
             <div class="col-2">
                 <div class="form-check">
@@ -152,6 +183,8 @@
             </div>
         </div>
     </form>
+    <div id="descriptions">
+    </div>
 </div>
     <script>
     let groupByCategory = true;
@@ -338,6 +371,32 @@
         }
         $("#isaac-description-popup").css({top: top, left: left});
     }
+    function handlePinDescription(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#descriptions").empty();
+        $(".isaac-image").removeClass("selected");
+        $(this).addClass("selected");
+        let title = $(this).find("a").attr("title");
+        let href = $(this).find("a").attr("href");
+        let category = $(this).data("isaac-category");
+        let i = all_names[category].indexOf(title);
+        let desc = $("#" + category + " .isaac-description:nth(" + i + ")");
+        html = "<div class=\"description\"><div class=\"icon\">"
+        html += $(this).html();
+        html += "</div>";
+        html += "<div class=\"body\"><div class=\"title\"><a href=\"";
+        html += href;
+        html += "\">";
+        html += title;
+        html += "</a></div><div class=\"text\">";
+        html += desc.html();
+        html += "</div></div>";
+        $(html).find(".icon span:nth-of-type(2)").show();
+        $(html).appendTo("#descriptions");
+        $("#descriptions .icon span:nth-of-type(2)").show();
+        return false;
+    }
     $(document).ready(function() {
         $("#groupByCategory").click(handleGroupByCategory);
         $("#orderAlphabetically").click(handleSort);
@@ -353,6 +412,7 @@
         filter();
         runSort();
 
+        /*
         $(".isaac-image").hover(
             function(e) {
                 $("#isaac-description-popup").show();
@@ -362,14 +422,23 @@
                 $("#isaac-description-popup").hide();
             }
         );
+        */
+        $(".isaac-image").each(function(i, e) {
+            let title = $(e).find("a").attr("title");
+            $(e).attr("data-bs-toggle", "tooltip");
+            $(e).attr("data-bs-placement", "bottom");
+            $(e).attr("title", title);
+            new bootstrap.Tooltip(e, { "animation": false });
+        });
+        $(".isaac-image").click(handlePinDescription)
         $(document.body).on('keyup', function(e) {
             if (e.keyCode == 27 /*ESC*/) {
                 handleCancelSearch();
-            } else if (e.keyCode == 13 /*ENTER*/) {
+                $("#descriptions").empty();
                 $("#search").focus();
             }
         });
     });
     </script>
-
-    <div class="all-category" id="All" style="display: none"></div>
+    <div id="content">
+        <div class="all-category" id="All" style="display: none"></div>
