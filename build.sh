@@ -7,7 +7,6 @@ pages=(\
   "Passive_Collectibles" \
   "All_Trinkets" \
   "Major_Arcana_Cards" \
-  "Reversed_Major_Arcana_Cards" \
   "Playing_Cards" \
   "Credit_Card_Back" \
   "Other_Playing_Card_Backs" \

@@ -70,6 +70,9 @@
         border-bottom: black solid 2px;
         font-family: VT323,serif;
     }
+    #banner .row {
+        margin: 0;
+    }
     #banner form {
         padding: 10px;
     }
@@ -94,7 +97,6 @@
         text-decoration: overline underline dotted;
     }
     #descriptions .description {
-        margin: 20px;
         display: table;
         width: 100%;
         border-top: black solid 1px;
@@ -187,6 +189,7 @@
     </div>
 </div>
     <script>
+    let browsing = false;
     let groupByCategory = true;
     function handleGroupByCategory() {
         let newGroupByCategory = $('#groupByCategory').prop('checked');
@@ -336,18 +339,15 @@
             }
         });
         let matches = $(".isaac-image:visible")
-        if (matches.length < 10) {        
-            $("#isaac-description-popup .modal-body").empty();
-            $("#isaac-description-popup .modal-title .text").empty();
-            $("#isaac-description-popup .modal-title .icon").empty();
-            matches.each(function(i, e) {
-                $(e).clone().appendTo("#isaac-description-popup .modal-body");
-            })
+        if (matches.length == 1) {
+            pinDescription(matches[0]);
         }
     }
     function handleCancelSearch() {
         $("#search").val("");
         handleSearch();
+        $("#descriptions").empty();
+        $(".isaac-image.selected").removeClass("selected");
     }
     function showDescription(isaacImage, e) {
         $("#isaac-description-popup .modal-body").empty();
@@ -374,16 +374,20 @@
     function handlePinDescription(e) {
         e.preventDefault();
         e.stopPropagation();
+        pinDescription(this);
+        return false;
+    }
+    function pinDescription(element) {
         $("#descriptions").empty();
         $(".isaac-image").removeClass("selected");
-        $(this).addClass("selected");
-        let title = $(this).find("a").attr("title");
-        let href = $(this).find("a").attr("href");
-        let category = $(this).data("isaac-category");
+        $(element).addClass("selected");
+        let title = $(element).find("a").attr("title");
+        let href = $(element).find("a").attr("href");
+        let category = $(element).data("isaac-category");
         let i = all_names[category].indexOf(title);
         let desc = $("#" + category + " .isaac-description:nth(" + i + ")");
         html = "<div class=\"description\"><div class=\"icon\">"
-        html += $(this).html();
+        html += $(element).html();
         html += "</div>";
         html += "<div class=\"body\"><div class=\"title\"><a href=\"";
         html += href;
@@ -395,7 +399,56 @@
         $(html).find(".icon span:nth-of-type(2)").show();
         $(html).appendTo("#descriptions");
         $("#descriptions .icon span:nth-of-type(2)").show();
-        return false;
+    }
+    function selectItem() {
+        let visible = $(".isaac-image:visible");
+        if (visible.length > 0) {
+            pinDescription(visible[0]);
+        }
+    }
+    function selectNext(nextSelector) {
+        let visible = $(".isaac-image:visible");
+        let selected = $(".isaac-image.selected");
+        let selectedTitle = selected.find("a").attr("title");
+        let next = null;
+        for (let i = 0; i < visible.length; i++) {
+            next = nextSelector(i, selected, $(visible[i]));
+            if (next != null) {
+                break;
+            }
+        }
+        if (next != null) {
+            if (next < 0) {
+                next = visible.length - 1;
+            } else if (next >= visible.length) {
+                next = 0;
+            }
+            pinDescription(visible[next]);
+        }
+    }
+    function selectRight() {
+        selectNext(function(i, selected, visible) {
+            let selectedTitle = selected.find("a").attr("title");
+            let title = visible.find("a").attr("title");
+            if (selectedTitle == title) {
+                return i + 1;
+            }
+            return null;            
+        });
+    }
+    function selectLeft() {
+        selectNext(function(i, selected, visible) {
+            let selectedTitle = selected.find("a").attr("title");
+            let title = visible.find("a").attr("title");
+            if (selectedTitle == title) {
+                return i - 1;
+            }
+            return null;            
+        });
+    }
+    function selectUp() {
+    }
+    function selectDown() {
     }
     $(document).ready(function() {
         $("#groupByCategory").click(handleGroupByCategory);
@@ -404,7 +457,12 @@
         $("#showNames").click(handleShowNames);
         $("#showActivablesBars").click(handleShowActivablesBars);
         $("#search").keyup(handleSearch);
-        $("form").submit(function() { return false; });
+        $("form").submit(function() {
+            selectItem();
+            $("#search").blur();
+            browsing = true;
+            return false;
+        });
         $("#cancel-search").click(handleCancelSearch);
         runGroupByCategory();
         runShowNames();
@@ -436,6 +494,17 @@
                 handleCancelSearch();
                 $("#descriptions").empty();
                 $("#search").focus();
+                browsing = false;
+            } else if (browsing) {
+                if (e.keyCode == 39 /*RIGHT*/) {
+                    selectRight();
+                } else if (e.keyCode == 37 /*LEFT*/) {
+                    selectLeft();
+                } else if (e.keyCode == 38 /*UP*/) {
+                    selectUp();
+                } else if (e.keyCode == 40 /*DOWN*/) {
+                    selectDown();
+                }
             }
         });
     });
